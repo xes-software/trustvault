@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "host",
+    "enclave"
+]
+
+[workspace.package]
+edition = "2024"
