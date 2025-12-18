@@ -3,6 +3,12 @@ members = [
     "host",
     "enclave"
 ]
+resolver = "3"
+rust-version = "1.92.0"
 
 [workspace.package]
 edition = "2024"
+
+[workspace.dependencies]
+tokio-vsock = "0.7.2"
+tokio = {version = "1", features = ["full"]}
