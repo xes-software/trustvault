@@ -12,8 +12,8 @@ memory_mib: 2000
 cpu_count: 1
 EOF
 
-dnf update -y
-dnf install -y \
+sudo dnf update -y
+sudo dnf install -y \
     rust \
     cargo \
     gcc \
