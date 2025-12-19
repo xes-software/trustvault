@@ -8,7 +8,12 @@ pub mod kmstool;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    eprintln!("Attempting to parse args...");
+    std::thread::sleep(std::time::Duration::from_secs(5));
     let args = cli::Args::parse();
+
+    eprintln!("Attempting to create VsockAddr...");
+    std::thread::sleep(std::time::Duration::from_secs(5));
     let vsock_addr = VsockAddr::new(VMADDR_CID_ANY, args.vsock_port);
     let listener = match VsockListener::bind(vsock_addr) {
         Ok(listener) => listener,
