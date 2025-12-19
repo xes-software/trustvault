@@ -4,11 +4,37 @@ Create an ec2 instance with nitro enclaves enabled with amazon linux 2023 (m7g.l
 
 ```bash
 cd ~/
-```
 
-# Fetch repository
+sudo mkdir -p /etc/nitro_enclaves
+sudo cat > /etc/nitro_enclaves/allocator.yaml <<'EOF'
+---
+memory_mib: 2000
+cpu_count: 1
+EOF
 
-```bash
+dnf update -y
+dnf install -y \
+    rust \
+    cargo \
+    gcc \
+    gcc-c++ \
+    make \
+    cmake \
+    clang \
+    pkg-config \
+    openssl-devel \
+    git
+sudo dnf install aws-nitro-enclaves-cli -y
+sudo dnf install aws-nitro-enclaves-cli-devel -y
+
+usermod -aG ne ssm-user
+usermod -aG docker ssm-user
+
+systemctl enable --now nitro-enclaves-allocator.service
+systemctl start nitro-enclaves-vsock-proxy.service
+systemctl enable nitro-enclaves-vsock-proxy.service
+systemctl enable --now docker
+
 git clone --recurse-submodules https://github.com/xes-software/trustvault.git
 ```
 
@@ -32,7 +58,7 @@ cd ~/
 ```bash
 cd ./trustvault
 # use release in the enclave
-docker build -f enclave-release.Dockerfile -t enclave .
+docker build -f enclave-debug.Dockerfile -t enclave .
 ```
 
 # Build enclave image

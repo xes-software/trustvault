@@ -106,41 +106,6 @@ Resources:
             VolumeType: gp3
             DeleteOnTermination: true
             Encrypted: true
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          set -e
-
-          mkdir -p /etc/nitro_enclaves
-          cat > /etc/nitro_enclaves/allocator.yaml <<'EOF'
-          ---
-          memory_mib: 2000
-          cpu_count: 1
-          EOF
-
-          dnf update -y
-          dnf install -y \
-              rust \
-              cargo \
-              gcc \
-              gcc-c++ \
-              make \
-              cmake \
-              clang \
-              pkg-config \
-              openssl-devel \
-              git
-          sudo dnf install aws-nitro-enclaves-cli -y
-          sudo dnf install aws-nitro-enclaves-cli-devel -y
-
-          usermod -aG ne ssm-user
-          usermod -aG docker ssm-user
-
-          systemctl enable --now nitro-enclaves-allocator.service
-          systemctl start nitro-enclaves-vsock-proxy.service
-          systemctl enable nitro-enclaves-vsock-proxy.service
-          systemctl enable --now docker
-
       Tags:
         - Key: Name
           Value: NitroEnclaveInstance
