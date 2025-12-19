@@ -6,7 +6,7 @@ Create an ec2 instance with nitro enclaves enabled with amazon linux 2023 (m7g.l
 cd ~/
 
 sudo mkdir -p /etc/nitro_enclaves
-sudo cat > /etc/nitro_enclaves/allocator.yaml <<'EOF'
+cat <<'EOF' | sudo tee /etc/nitro_enclaves/allocator.yaml > /dev/null
 ---
 memory_mib: 2000
 cpu_count: 1
@@ -27,50 +27,28 @@ sudo dnf install -y \
 sudo dnf install aws-nitro-enclaves-cli -y
 sudo dnf install aws-nitro-enclaves-cli-devel -y
 
-usermod -aG ne ssm-user
-usermod -aG docker ssm-user
+sudo usermod -aG ne ssm-user
+sudo usermod -aG docker ssm-user
 
-systemctl enable --now nitro-enclaves-allocator.service
-systemctl start nitro-enclaves-vsock-proxy.service
-systemctl enable nitro-enclaves-vsock-proxy.service
-systemctl enable --now docker
+sudo systemctl enable --now nitro-enclaves-allocator.service
+sudo systemctl start nitro-enclaves-vsock-proxy.service
+sudo systemctl enable nitro-enclaves-vsock-proxy.service
+sudo systemctl enable --now docker
 
 git clone --recurse-submodules https://github.com/xes-software/trustvault.git
 ```
 
-# Build KMS Tool Enclave CLI
+# Terminate shell (part 2)
+
 
 ```bash
-cd trustvault/aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/
+cd ~/trustvault/aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/
 ./build.sh
-cd ~/
-```
-
-# Build application (debug)
-```bash
-cd ./trustvault
+cd ~/trustvault
 cargo build
-cd ~/
-```
-
-# Build docker image
-
-```bash
-cd ./trustvault
-# use release in the enclave
 docker build -f enclave-debug.Dockerfile -t enclave .
-```
-
-# Build enclave image
-
-```bash
 cd ~/
 nitro-cli build-enclave --docker-uri enclave --output-file ./trustvault/enclave.eif
-```
-
-# Start enclave
-
-```bash
 nitro-cli run-enclave --cpu-count 1 --memory 2000 --enclave-cid 16 --eif-path ./trustvault/enclave.eif --debug-mode
 ```
 
