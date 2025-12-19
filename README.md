@@ -31,7 +31,8 @@ cd ~/
 
 ```bash
 cd ./trustvault
-docker build -f enclave-debug.Dockerfile -t enclave .
+# Or release
+docker build -f enclave-release.Dockerfile -t enclave .
 ```
 
 # Build enclave image
