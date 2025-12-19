@@ -1,6 +1,4 @@
-FROM alpine:3.23.2
-
-RUN apk add --no-cache libgcc libstdc++
+FROM amazonlinux:2023
 
 COPY ./target/debug/enclave /usr/local/bin/enclave
 COPY aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/kmstool_enclave_cli /usr/local/bin/
