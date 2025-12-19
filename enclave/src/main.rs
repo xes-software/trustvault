@@ -10,7 +10,19 @@ pub mod kmstool;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = cli::Args::parse();
     let vsock_addr = VsockAddr::new(VMADDR_CID_ANY, args.vsock_port);
-    let listener = VsockListener::bind(vsock_addr).expect("Unable to bind to vsock port.");
+    let listener = match VsockListener::bind(vsock_addr) {
+        Ok(listener) => listener,
+        Err(e) => {
+            eprintln!(
+                "✗ Failed to bind vsock (this is expected outside enclave): {}",
+                e
+            );
+            eprintln!("Running in test mode...");
+            // For docker testing only
+            std::thread::sleep(std::time::Duration::from_secs(5));
+            panic!("Error");
+        }
+    };
 
     loop {
         let (stream, addr) = match listener.accept().await {
