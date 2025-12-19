@@ -1,0 +1,69 @@
+use serde::{Deserialize, Serialize};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio_vsock::VsockStream;
+
+#[derive(Serialize, Deserialize)]
+pub enum VsockHostRequest {
+    CreateWallet {
+        aws_region: String,
+        aws_access_key_id: String,
+        aws_secret_access_key: String,
+        aws_session_token: String,
+        kms_proxy_port: String,
+        kms_key_id: String,
+    },
+    Sign,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct VsockEnclaveCreateWalletResponse {
+    encrypted_secret_key: Vec<u8>,
+    aes_gcm_nonce: [u8; 12],
+    kms_ciphertext: [u8; 32],
+    kms_key_id: String,
+}
+
+pub struct VsockTransport {
+    stream: VsockStream,
+}
+
+impl VsockTransport {
+    pub fn new(stream: VsockStream) -> Self {
+        return Self { stream };
+    }
+
+    pub async fn receive<T: for<'de> Deserialize<'de>>(&mut self) -> Result<T, VsockReceiveError> {
+        let mut len_bytes = [0u8; 4];
+        self.stream.read_exact(&mut len_bytes).await?;
+        let len = u32::from_be_bytes(len_bytes) as usize;
+        let mut buf = vec![0u8; len];
+        self.stream.read_exact(&mut buf).await?;
+        let message: T = serde_cbor::from_slice(&buf)?;
+        return Ok(message);
+    }
+
+    pub async fn send<T: Serialize>(&mut self, message: &T) -> Result<(), VsockSendError> {
+        let cbor_bytes = serde_cbor::to_vec(message)?;
+        let len = cbor_bytes.len() as u32;
+        self.stream.write_all(&len.to_be_bytes()).await?;
+        self.stream.write_all(&cbor_bytes).await?;
+        self.stream.flush().await?;
+        return Ok(());
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum VsockReceiveError {
+    #[error("failed to read exact bytes")]
+    Io(#[from] std::io::Error),
+    #[error("failed to deserialize cbor")]
+    Deserialization(#[from] serde_cbor::Error),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum VsockSendError {
+    #[error("failed to write bytes")]
+    Io(#[from] std::io::Error),
+    #[error("failed to serialize cbor")]
+    Serialization(#[from] serde_cbor::Error),
+}

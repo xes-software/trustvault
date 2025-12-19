@@ -1,3 +1,4 @@
+use pallas_crypto::key::ed25519;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
@@ -11,4 +12,8 @@ impl StorableCardanoKey {
     pub fn serialize_cbor(&self) -> Result<Vec<u8>, serde_cbor::Error> {
         serde_cbor::to_vec(self)
     }
+}
+
+pub fn create(bytes: [u8; 64]) {
+    let secret_key = ed25519::SecretKeyExtended::from_bytes(bytes).unwrap();
 }

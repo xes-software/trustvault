@@ -1,6 +1,6 @@
 use tokio::process::Command;
 
-pub async fn genrandom(
+pub async fn kms_genrandom(
     region: &str,
     access_key_id: &str,
     secret_access_key: &str,
@@ -26,7 +26,7 @@ pub async fn genrandom(
         .await;
 }
 
-pub async fn genkey(
+pub async fn kms_genkey(
     region: &str,
     access_key_id: &str,
     secret_access_key: &str,
@@ -55,7 +55,7 @@ pub async fn genkey(
         .await;
 }
 
-pub async fn decrypt(
+pub async fn kms_decrypt(
     region: &str,
     access_key_id: &str,
     secret_access_key: &str,
