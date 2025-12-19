@@ -31,7 +31,7 @@ cd ~/
 
 ```bash
 cd ./trustvault
-# Or release
+# use release in the enclave
 docker build -f enclave-release.Dockerfile -t enclave .
 ```
 
