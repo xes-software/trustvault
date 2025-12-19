@@ -1,32 +1,32 @@
 use tokio::process::Command;
 
-pub async fn kms_genrandom(
-    region: &str,
-    access_key_id: &str,
-    secret_access_key: &str,
-    session_token: &str,
-    proxy_port: &str,
-    length: &str,
+pub async fn genrandom(
+    aws_region: &str,
+    aws_access_key_id: &str,
+    aws_secret_access_key: &str,
+    aws_session_token: &str,
+    kms_proxy_port: &str,
+    byte_length: &str,
 ) -> Result<std::process::Output, std::io::Error> {
     return Command::new("kmstool_enclave_cli")
         .arg("genrandom")
         .arg("--region")
-        .arg(region)
+        .arg(aws_region)
         .arg("--aws-access-key-id")
-        .arg(access_key_id)
+        .arg(aws_access_key_id)
         .arg("--aws-secret-access-key")
-        .arg(secret_access_key)
+        .arg(aws_secret_access_key)
         .arg("--aws-session-token")
-        .arg(session_token)
+        .arg(aws_session_token)
         .arg("--proxy-port")
-        .arg(proxy_port)
+        .arg(kms_proxy_port)
         .arg("--length")
-        .arg(length)
+        .arg(byte_length)
         .output()
         .await;
 }
 
-pub async fn kms_genkey(
+pub async fn genkey(
     region: &str,
     access_key_id: &str,
     secret_access_key: &str,
@@ -55,7 +55,7 @@ pub async fn kms_genkey(
         .await;
 }
 
-pub async fn kms_decrypt(
+pub async fn decrypt(
     region: &str,
     access_key_id: &str,
     secret_access_key: &str,

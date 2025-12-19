@@ -4,3 +4,13 @@ version = "0.1.0"
 edition.workspace = true
 
 [dependencies]
+tokio-vsock = {workspace = true}
+tokio = {workspace = true}
+clap = {workspace = true}
+serde = {workspace = true}
+serde_cbor = {workspace = true}
+pallas-crypto = "0.34.0"
+aes-gcm = "0.10.3"
+shared = {workspace = true}
+aws-sdk-sts = "1.95.0"
+aws-config = { version = "1.8", features = ["behavior-version-latest"] }

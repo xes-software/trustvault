@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: EC2 instance with Nitro Enclaves and a KMS key restricted by attestation.
+
+Resources:
+  EC2NitroRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-EC2-NitroRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+
+          # Allow account root with condition for self-assumption
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                "aws:PrincipalArn": !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-EC2-NitroRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: SelfAssumeRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: sts:AssumeRole
+                Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-EC2-NitroRole"
+        # Additional permissions for Nitro Enclaves (example)
+        - PolicyName: NitroEnclavePermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:GenerateRandom
+                  - kms:Decrypt
+                  - kms:Encrypt
+                  - kms:GenerateDataKey
+                  - kms:DescribeKey
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: "*"
+
+  # Instance Profile for EC2
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub "${AWS::StackName}-EC2-InstanceProfile"
+      Roles:
+        - !Ref EC2NitroRole
+
+  ### KMS Key ###
+  EnclaveKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "KMS key accessible only to enclaves with a specific attestation image SHA384."
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          # Allow root account full control
+          - Sid: AllowRootAccount
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: "kms:*"
+            Resource: "*"
+
+          # Allow EC2 Role to call GenerateRandom
+          - Sid: AllowEnclaveOperations
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt EC2NitroRole.Arn
+            Action:
+              - "kms:GenerateRandom"
+              - "kms:DescribeKey"
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey"
+            Resource: "*"
+            Condition:
+              StringEqualsIgnoreCase:
+                "kms:RecipientAttestation:ImageSha384": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+
+  ### EC2 Instance with Nitro Enclaves ###
+  EnclaveInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: m7g.large
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      ImageId: ami-0858e76ce571eb464 # ARM Linux 2023
+      EnclaveOptions:
+        Enabled: true
+      Tags:
+        - Key: Name
+          Value: NitroEnclaveInstance
