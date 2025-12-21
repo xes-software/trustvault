@@ -27,6 +27,7 @@ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 git clone --recurse-submodules https://github.com/xes-software/trustvault.git
 source $HOME/.cargo/env
 rustup target add aarch64-unknown-linux-musl
+cargo build --target=aarch64-unknown-linux-musl
 
 sudo dnf install aws-nitro-enclaves-cli -y
 sudo dnf install aws-nitro-enclaves-cli-devel -y
