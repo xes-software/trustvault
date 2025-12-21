@@ -14,8 +14,6 @@ EOF
 
 sudo dnf update -y
 sudo dnf install -y \
-    rust \
-    cargo \
     gcc \
     gcc-c++ \
     make \
@@ -24,6 +22,12 @@ sudo dnf install -y \
     pkg-config \
     openssl-devel \
     git
+
+curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+git clone --recurse-submodules https://github.com/xes-software/trustvault.git
+source $HOME/.cargo/env
+rustup target add aarch64-unknown-linux-musl
+
 sudo dnf install aws-nitro-enclaves-cli -y
 sudo dnf install aws-nitro-enclaves-cli-devel -y
 
@@ -35,7 +39,6 @@ sudo systemctl start nitro-enclaves-vsock-proxy.service
 sudo systemctl enable nitro-enclaves-vsock-proxy.service
 sudo systemctl enable --now docker
 
-git clone --recurse-submodules https://github.com/xes-software/trustvault.git
 ```
 
 # Terminate shell (part 2)
