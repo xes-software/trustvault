@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: EC2 instance with Nitro Enclaves and a KMS key restricted by attestation.
 
+Parameters:
+  LatestAmiId:
+    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+    Default: "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
+
 Resources:
   EC2NitroRole:
     Type: AWS::IAM::Role
@@ -96,7 +101,7 @@ Resources:
     Properties:
       InstanceType: m7g.large
       IamInstanceProfile: !Ref EC2InstanceProfile
-      ImageId: ami-0858e76ce571eb464 # ARM Linux 2023
+      ImageId: !Ref LatestAmiId
       EnclaveOptions:
         Enabled: true
       BlockDeviceMappings:
