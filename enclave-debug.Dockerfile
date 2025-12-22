@@ -1,6 +1,6 @@
 FROM amazonlinux:2023
 
-COPY ./target/aarch64-unknown-linux-musl/debug/enclave /usr/local/bin/enclave
+COPY ./target/aarch64-unknown-linux-gnu/debug/enclave /usr/local/bin/enclave
 COPY aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/kmstool_enclave_cli /usr/local/bin/
 COPY aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/libnsm.so /usr/lib/
 RUN chmod +x /usr/local/bin/enclave && \

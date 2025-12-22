@@ -27,7 +27,8 @@ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 git clone --recurse-submodules https://github.com/xes-software/trustvault.git
 source $HOME/.cargo/env
 rustup target add aarch64-unknown-linux-musl
-cargo build --target=aarch64-unknown-linux-musl
+cd ./trustvault
+cargo build --target=aarch64-unknown-linux-gnu
 
 sudo dnf install aws-nitro-enclaves-cli -y
 sudo dnf install aws-nitro-enclaves-cli-devel -y
@@ -35,17 +36,17 @@ sudo dnf install aws-nitro-enclaves-cli-devel -y
 sudo usermod -aG ne ssm-user
 sudo usermod -aG docker ssm-user
 
-sudo systemctl enable --now nitro-enclaves-allocator.service
-sudo systemctl start nitro-enclaves-vsock-proxy.service
-sudo systemctl enable nitro-enclaves-vsock-proxy.service
 sudo systemctl enable --now docker
-
 ```
 
 # Terminate shell (part 2)
 
 
 ```bash
+sudo systemctl enable --now nitro-enclaves-allocator.service
+sudo systemctl start nitro-enclaves-vsock-proxy.service
+sudo systemctl enable nitro-enclaves-vsock-proxy.service
+
 cd ~/trustvault/aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/
 ./build.sh
 cd ~/trustvault

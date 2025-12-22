@@ -1,3 +1,4 @@
+/// TODO: remove pallas_crypto and use ed25519-dalek crate.
 use pallas_crypto::key::ed25519;
 use serde::{Deserialize, Serialize};
 
