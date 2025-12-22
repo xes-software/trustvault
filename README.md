@@ -55,7 +55,7 @@ sudo systemctl start nitro-enclaves-vsock-proxy.service
 sudo systemctl enable nitro-enclaves-vsock-proxy.service
 
 nitro-cli build-enclave --docker-uri enclave --output-file ./trustvault/enclave.eif
-nitro-cli run-enclave --cpu-count 1 --memory 2000 --enclave-cid 16 --eif-path ./trustvault/enclave.eif --debug-mode && nitro-cli console --enclave-name enclave > enclave_logs.txt &
+nitro-cli run-enclave --cpu-count 1 --memory 2000 --enclave-cid 16 --eif-path ./trustvault/enclave.eif --debug-mode 
 ```
 
 # Start server to talk to enclave
