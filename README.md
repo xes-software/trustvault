@@ -43,16 +43,17 @@ sudo systemctl enable --now docker
 
 
 ```bash
+cd ~/trustvault/aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/
+./build.sh
+
+cd ~/trustvault
+docker build -f enclave-debug.Dockerfile -t enclave .
+cd ~/
+
 sudo systemctl enable --now nitro-enclaves-allocator.service
 sudo systemctl start nitro-enclaves-vsock-proxy.service
 sudo systemctl enable nitro-enclaves-vsock-proxy.service
 
-cd ~/trustvault/aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/
-./build.sh
-cd ~/trustvault
-cargo build
-docker build -f enclave-debug.Dockerfile -t enclave .
-cd ~/
 nitro-cli build-enclave --docker-uri enclave --output-file ./trustvault/enclave.eif
 nitro-cli run-enclave --cpu-count 1 --memory 2000 --enclave-cid 16 --eif-path ./trustvault/enclave.eif --debug-mode
 ```
