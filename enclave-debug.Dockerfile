@@ -16,4 +16,4 @@ COPY aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/kmstool_enclave_cli /usr/l
 COPY aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/libnsm.so /usr/lib/
 RUN chmod +x /usr/local/bin/enclave && \
     chmod +x /usr/local/bin/kmstool_enclave_cli
-CMD ["sleep", "1", "&&", "enclave", "--vsock-port", "3000"]
+CMD ["sleep", "1", "&&", "enclave", "--vsock-port", "3000", "&&", "sleep", "infinity"]
