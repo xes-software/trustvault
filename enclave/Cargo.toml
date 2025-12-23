@@ -12,3 +12,5 @@ serde_cbor = {workspace = true}
 pallas-crypto = "0.34.0"
 aes-gcm = "0.10.3"
 shared = {workspace = true}
+thiserror = {workspace = true}
+base64 = "0.22"

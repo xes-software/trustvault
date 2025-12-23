@@ -54,7 +54,7 @@ impl VsockTransport {
 
 #[derive(Debug, thiserror::Error)]
 pub enum VsockReceiveError {
-    #[error("failed to read exact bytes")]
+    #[error("failed to stream.read_exact()")]
     Io(#[from] std::io::Error),
     #[error("failed to deserialize cbor")]
     Deserialization(#[from] serde_cbor::Error),
@@ -62,7 +62,7 @@ pub enum VsockReceiveError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum VsockSendError {
-    #[error("failed to write bytes")]
+    #[error("failed to stream.write_all()")]
     Io(#[from] std::io::Error),
     #[error("failed to serialize cbor")]
     Serialization(#[from] serde_cbor::Error),

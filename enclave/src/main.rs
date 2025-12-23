@@ -51,21 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         match genrandom_output {
                             Ok(output) => {
                                 #[cfg(debug_assertions)]
-                                eprintln!(
-                                    "kmstool::genrandom() stdout: {}",
-                                    String::from_utf8_lossy(&output.stdout)
-                                );
-                                #[cfg(debug_assertions)]
-                                eprintln!(
-                                    "kmstool::genrandom() stderr: {}",
-                                    String::from_utf8_lossy(&output.stdout)
-                                );
-                                #[cfg(debug_assertions)]
-                                eprintln!(
-                                    "kmstool::genrandom() status: {}",
-                                    String::from_utf8_lossy(&output.stdout)
-                                );
-
+                                eprintln!("kmstool::genrandom() stdout: {:?}", output);
                                 let res = VsockEnclaveCreateWalletResponse {
                                     aes_gcm_nonce: [0u8; 12],
                                     encrypted_secret_key: vec![0u8; 12],
