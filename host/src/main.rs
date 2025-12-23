@@ -1,6 +1,7 @@
 use aws_config::{BehaviorVersion, Region};
 use aws_sdk_sts::Client as StsClient;
 use clap::Parser;
+use shared::transport;
 
 #[derive(Parser)]
 pub struct Args {
@@ -31,7 +32,7 @@ async fn main() {
         .duration_seconds(3600)
         .send()
         .await
-        .unwrap();
+        .expect("failed to obtain sts assume role");
 
     println!("{:?}", response);
 }

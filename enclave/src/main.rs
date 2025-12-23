@@ -8,33 +8,17 @@ pub mod kmstool;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    eprintln!("Attempting to parse args...");
-    std::thread::sleep(std::time::Duration::from_secs(5));
     let args = cli::Args::parse();
-
-    eprintln!("Attempting to create VsockAddr...");
-    std::thread::sleep(std::time::Duration::from_secs(5));
     let vsock_addr = VsockAddr::new(VMADDR_CID_ANY, args.vsock_port);
-    let listener = match VsockListener::bind(vsock_addr) {
-        Ok(listener) => listener,
-        Err(e) => {
-            eprintln!(
-                "✗ Failed to bind vsock (this is expected outside enclave): {}",
-                e
-            );
-            eprintln!("Running in test mode...");
-            // For docker testing only
-            std::thread::sleep(std::time::Duration::from_secs(5));
-            panic!("Error");
-        }
-    };
+    let listener = VsockListener::bind(vsock_addr)
+        .expect(&format!("failed to bind vsock on port {}", args.vsock_port));
 
     loop {
         let (stream, addr) = match listener.accept().await {
             Ok(connection) => connection,
             Err(e) => {
                 #[cfg(debug_assertions)]
-                eprintln!("failed to accept connection: {}", e);
+                eprintln!("failed to accept connection with error: {}", e);
                 continue;
             }
         };
@@ -68,9 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             Ok(output) => {
                                 #[cfg(debug_assertions)]
                                 eprintln!("kmstool::genrandom() stdout: {:?}", output.stdout);
-
                                 eprintln!("kmstool::genrandom() stderr: {:?}", output.stderr);
-
                                 eprintln!("kmstool::genrandom() status: {:?}", output.status);
                             }
                             Err(e) => {
