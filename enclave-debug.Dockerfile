@@ -10,7 +10,7 @@ COPY . .
 RUN cargo build --target=aarch64-unknown-linux-musl -p enclave
 
 # Final enclave image
-FROM alpine:latest
+FROM amazonlinux:latest
 COPY --from=builder /build/target/aarch64-unknown-linux-musl/debug/enclave /usr/local/bin/enclave
 COPY aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/kmstool_enclave_cli /usr/local/bin/
 COPY aws-nitro-enclaves-sdk-c/bin/kmstool-enclave-cli/libnsm.so /usr/lib/
