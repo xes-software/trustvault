@@ -2,8 +2,8 @@ use clap::Parser;
 use shared::transport::{VsockEnclaveCreateWalletResponse, VsockHostRequest, VsockTransport};
 use tokio_vsock::{VMADDR_CID_ANY, VsockAddr, VsockListener};
 
+pub mod aes256gcm;
 pub mod cli;
-pub mod crypto;
 pub mod kmstool;
 
 #[tokio::main(flavor = "current_thread")]
@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         match genrandom_output {
                             Ok(output) => {
                                 #[cfg(debug_assertions)]
-                                eprintln!("kmstool::genrandom() stdout: {:?}", output);
+                                eprintln!("kmstool::genrandom() stdout: {:?}", output[0]);
                                 let res = VsockEnclaveCreateWalletResponse {
                                     aes_gcm_nonce: [0u8; 12],
                                     encrypted_secret_key: vec![0u8; 12],
@@ -62,7 +62,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     .send::<VsockEnclaveCreateWalletResponse>(&res)
                                     .await
                                     .expect("failed to send transport response");
-                                // transport.send::<VsockEnclaveCreateWalletResponse>(
                             }
                             Err(e) => {
                                 #[cfg(debug_assertions)]
