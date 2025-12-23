@@ -61,5 +61,5 @@ nitro-cli run-enclave --cpu-count 1 --memory 2000 --enclave-cid 16 --eif-path ./
 # Start server to talk to enclave
 
 ```bash
-./trustvault/target/debug/host --aws-region us-east-1
+./trustvault/target/aarch64-unknown-linux-gnu/debug/host --aws-region us-east-1 --vsock-port 3000 --enclave-cid 16 --kms-proxy-port 8000 --kms-key-id 74874ab4-9648-4fa5-9122-e95e8b440fa7
 ```

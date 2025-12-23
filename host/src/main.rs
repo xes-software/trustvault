@@ -38,6 +38,13 @@ async fn main() {
     let response = sts_client
         .assume_role()
         .role_arn(&role_arn)
+        .role_session_name(format!(
+            "trustvault-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("failed to get system time")
+                .as_secs()
+        ))
         .duration_seconds(3600)
         .send()
         .await
