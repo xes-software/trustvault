@@ -52,7 +52,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             Ok(output) => {
                                 #[cfg(debug_assertions)]
                                 eprintln!("kmstool::genrandom() stdout: {:?}", output.stdout);
+                                #[cfg(debug_assertions)]
                                 eprintln!("kmstool::genrandom() stderr: {:?}", output.stderr);
+                                #[cfg(debug_assertions)]
                                 eprintln!("kmstool::genrandom() status: {:?}", output.status);
 
                                 let res = VsockEnclaveCreateWalletResponse {

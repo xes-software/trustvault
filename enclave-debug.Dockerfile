@@ -7,7 +7,7 @@ WORKDIR /build
 COPY . .
 
 # Build the enclave binary
-RUN cargo build --target=aarch64-unknown-linux-musl
+RUN cargo build --target=aarch64-unknown-linux-musl -p enclave
 
 # Final enclave image
 FROM alpine:latest

@@ -28,7 +28,7 @@ git clone --recurse-submodules https://github.com/xes-software/trustvault.git
 source $HOME/.cargo/env
 rustup target add aarch64-unknown-linux-musl
 cd ./trustvault
-cargo build --target=aarch64-unknown-linux-gnu
+cargo build --target=aarch64-unknown-linux-gnu -p host 
 
 sudo dnf install aws-nitro-enclaves-cli -y
 sudo dnf install aws-nitro-enclaves-cli-devel -y
