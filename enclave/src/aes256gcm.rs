@@ -80,7 +80,23 @@ mod tests {
         assert!(result.is_err());
         match result {
             Err(Aes256GcmError::DecryptionFailed) => {}
-            _ => panic!("Expected DecryptionFailed error"),
+            _ => panic!("expected DecryptionFailed error"),
         }
+    }
+
+    #[test]
+    fn test_decrypt_with_wrong_nonce_fails() {
+        let private_key = [42u8; 64];
+        let encryption_key = [1u8; 32];
+        let nonce = [0u8; 12];
+        let wrong_nonce = [99u8; 12];
+
+        let ciphertext = encrypt_private_key_aes256gcm(&private_key, &encryption_key, &nonce)
+            .expect("encryption unexpectedly failed");
+
+        let result = decrypt_private_key_aes256gcm(&ciphertext, &encryption_key, &wrong_nonce);
+
+        assert!(result.is_err());
+        assert!(matches!(result, Err(Aes256GcmError::DecryptionFailed)));
     }
 }
