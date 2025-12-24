@@ -67,6 +67,7 @@ async fn main() {
         aws_session_token: response.credentials().unwrap().session_token.clone(),
         kms_proxy_port: args.kms_proxy_port,
         kms_key_id: args.kms_key_id,
+        nonce: [0u8; 12],
     };
 
     transport
@@ -78,6 +79,7 @@ async fn main() {
         .receive::<VsockEnclaveCreateWalletResponse>()
         .await
         .expect("failed to recieve response");
+    println!("response: {:?}", response);
 }
 
 fn convert_to_role_arn(assumed_role_arn: &str) -> String {

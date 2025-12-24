@@ -2,6 +2,8 @@ use clap::Parser;
 use shared::transport::{VsockEnclaveCreateWalletResponse, VsockHostRequest, VsockTransport};
 use tokio_vsock::{VMADDR_CID_ANY, VsockAddr, VsockListener};
 
+use crate::aes256gcm::encrypt_private_key_aes256gcm;
+
 pub mod aes256gcm;
 pub mod cli;
 pub mod kmstool;
@@ -37,6 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         aws_session_token,
                         kms_proxy_port,
                         kms_key_id,
+                        nonce,
                     } => {
                         let genrandom_output = kmstool::genrandom(
                             aws_region.as_str(),
@@ -50,13 +53,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                         match genrandom_output {
                             Ok(output) => {
+                                let private_key = &output[0];
                                 #[cfg(debug_assertions)]
-                                eprintln!("kmstool::genrandom() stdout: {:?}", output[0]);
+                                eprintln!("kmstool::genrandom() stdout: {:?}", private_key);
+
+                                let [encryption_key_ciphertext, encryption_key_plaintext] =
+                                    kmstool::genkey(
+                                        aws_region.as_str(),
+                                        aws_access_key_id.as_str(),
+                                        aws_secret_access_key.as_str(),
+                                        aws_session_token.as_str(),
+                                        kms_proxy_port.as_str(),
+                                        kms_key_id.as_str(),
+                                        "AES-256",
+                                    )
+                                    .await
+                                    .expect("kmstool::genkey() failed unexpectedly");
+
+                                let private_key_ciphertext = encrypt_private_key_aes256gcm(
+                                    private_key.as_slice().try_into().unwrap(),
+                                    encryption_key_plaintext.as_slice().try_into().unwrap(),
+                                    &nonce,
+                                )
+                                .unwrap();
+
                                 let res = VsockEnclaveCreateWalletResponse {
-                                    aes_gcm_nonce: [0u8; 12],
-                                    encrypted_secret_key: vec![0u8; 12],
-                                    kms_ciphertext: [0u8; 32],
-                                    kms_key_id: String::new(),
+                                    aes_gcm_nonce: nonce,
+                                    encrypted_secret_key: private_key_ciphertext,
+                                    kms_ciphertext: encryption_key_ciphertext
+                                        .as_slice()
+                                        .try_into()
+                                        .unwrap(),
+                                    kms_key_id: kms_key_id,
                                 };
                                 transport
                                     .send::<VsockEnclaveCreateWalletResponse>(&res)

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_vsock::VsockStream;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum VsockHostRequest {
     CreateWallet {
         aws_region: String,
@@ -11,11 +11,12 @@ pub enum VsockHostRequest {
         aws_session_token: String,
         kms_proxy_port: String,
         kms_key_id: String,
+        nonce: [u8; 12],
     },
     Sign,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct VsockEnclaveCreateWalletResponse {
     pub encrypted_secret_key: Vec<u8>,
     pub aes_gcm_nonce: [u8; 12],
