@@ -9,3 +9,4 @@ serde = {workspace = true}
 serde_cbor = {workspace = true}
 tokio = {workspace = true}
 thiserror = {workspace = true}
+base64 = {workspace = true}

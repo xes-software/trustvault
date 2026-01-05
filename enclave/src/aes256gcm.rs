@@ -1,14 +1,5 @@
 use aes_gcm::{Aes256Gcm, KeyInit, Nonce, aead::Aead};
-
-#[derive(Debug, thiserror::Error)]
-pub enum Aes256GcmError {
-    #[error("aes256gcm key was invalid (not 32 bytes)")]
-    InvalidLength,
-    #[error("encryption operation failed")]
-    EncryptionFailed,
-    #[error("decryption operation failed")]
-    DecryptionFailed,
-}
+use shared::error::Aes256GcmError;
 
 pub fn encrypt_private_key_aes256gcm(
     private_key: &[u8; 64],

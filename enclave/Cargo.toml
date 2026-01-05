@@ -13,4 +13,4 @@ pallas-crypto = "0.34.0"
 aes-gcm = "0.10.3"
 shared = {workspace = true}
 thiserror = {workspace = true}
-base64 = "0.22"
+base64 = {workspace = true}

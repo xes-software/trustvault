@@ -1,28 +1,7 @@
+use crate::error::{VsockEnclaveCreateWalletError, VsockReceiveError, VsockSendError};
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio_vsock::VsockStream;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum VsockHostRequest {
-    CreateWallet {
-        aws_region: String,
-        aws_access_key_id: String,
-        aws_secret_access_key: String,
-        aws_session_token: String,
-        kms_proxy_port: String,
-        kms_key_id: String,
-        nonce: [u8; 12],
-    },
-    Sign,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct VsockEnclaveCreateWalletResponse {
-    pub encrypted_secret_key: Vec<u8>,
-    pub aes_gcm_nonce: [u8; 12],
-    pub kms_ciphertext: [u8; 32],
-    pub kms_key_id: String,
-}
 
 pub struct VsockTransport {
     stream: VsockStream,
@@ -53,18 +32,27 @@ impl VsockTransport {
     }
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum VsockReceiveError {
-    #[error("failed to stream.read_exact()")]
-    Io(#[from] std::io::Error),
-    #[error("failed to deserialize cbor")]
-    Deserialization(#[from] serde_cbor::Error),
+#[derive(Serialize, Deserialize, Debug)]
+pub enum VsockHostRequest {
+    CreateWallet {
+        aws_region: String,
+        aws_access_key_id: String,
+        aws_secret_access_key: String,
+        aws_session_token: String,
+        kms_proxy_port: String,
+        kms_key_id: String,
+        nonce: [u8; 12],
+    },
+    Sign,
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum VsockSendError {
-    #[error("failed to stream.write_all()")]
-    Io(#[from] std::io::Error),
-    #[error("failed to serialize cbor")]
-    Serialization(#[from] serde_cbor::Error),
+#[derive(Serialize, Deserialize, Debug)]
+pub struct VsockEnclaveCreateWalletData {
+    pub encrypted_secret_key: Vec<u8>,
+    pub aes_gcm_nonce: [u8; 12],
+    pub kms_ciphertext: [u8; 32],
+    pub kms_key_id: String,
 }
+
+pub type VsockEnclaveCreateWalletResponse =
+    Result<VsockEnclaveCreateWalletData, VsockEnclaveCreateWalletError>;
