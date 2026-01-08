@@ -73,3 +73,8 @@ pub enum SignatureScheme {
     Secp256k1,
     Ed25519,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct VsockEnclaveSignData {}
+
+pub type VsockEnclaveSignResponse = Result<VsockEnclaveSignData, VsockEnclaveCreateWalletError>;

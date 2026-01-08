@@ -1,7 +1,7 @@
 use clap::Parser;
 use shared::transport::{
-    VsockEnclaveCreateWalletData, VsockEnclaveCreateWalletResponse, VsockHostRequest,
-    VsockTransport,
+    VsockEnclaveCreateWalletData, VsockEnclaveCreateWalletResponse, VsockEnclaveSignData,
+    VsockEnclaveSignResponse, VsockHostRequest, VsockTransport,
 };
 use tokio_vsock::{VMADDR_CID_ANY, VsockAddr, VsockListener};
 
@@ -110,9 +110,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         return;
                     }
                 }
-                VsockHostRequest::Sign {} => {
+                VsockHostRequest::Sign {
+                    aws_region,
+                    aws_access_key_id,
+                    aws_secret_access_key,
+                    aws_session_token,
+                    kms_proxy_port,
+                    kms_key_id,
+                    aes_gcm_nonce,
+                    encrypted_secret_key,
+                    kms_ciphertext,
+                    signature_scheme,
+                } => {
+                    let result = (async || -> VsockEnclaveSignResponse {
+                        let decrypted = kmstool::decrypt(
+                            aws_region.as_str(),
+                            aws_access_key_id.as_str(),
+                            aws_secret_access_key.as_str(),
+                            aws_session_token.as_str(),
+                            kms_proxy_port.as_str(),
+                            kms_ciphertext.as_str(), // TODO: this needs to be base64
+                        )
+                        .await?;
 
-                    let decrypted = kmstool::decrypt(region, access_key_id, secret_access_key, session_token, proxy_port, ciphertext)
+                        return Ok(VsockEnclaveSignData {});
+                    })()
+                    .await;
+
                     #[cfg(debug_assertions)]
                     eprintln!("sign is not yet implemented");
                 }
