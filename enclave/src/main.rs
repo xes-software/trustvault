@@ -37,6 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let request = match transport.receive::<VsockHostRequest>().await {
                 Ok(request) => request,
                 Err(e) => {
+                    // TODO: figure out how best to handle vsock errors instead of silently failing
                     #[cfg(debug_assertions)]
                     eprintln!("failed to receive request: {}", e);
                     return;
@@ -51,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     aws_session_token,
                     kms_proxy_port,
                     kms_key_id,
-                    nonce,
+                    aes_gcm_nonce,
                 } => {
                     let result = (async || -> VsockEnclaveCreateWalletResponse {
                         let genrandom_output = kmstool::genrandom(
@@ -83,11 +84,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         let private_key_ciphertext = encrypt_private_key_aes256gcm(
                             private_key.as_slice().try_into().unwrap(),
                             encryption_key_plaintext.as_slice().try_into().unwrap(),
-                            &nonce,
+                            &aes_gcm_nonce,
                         )?;
 
                         return Ok(VsockEnclaveCreateWalletData {
-                            aes_gcm_nonce: nonce,
+                            aes_gcm_nonce: aes_gcm_nonce,
                             encrypted_secret_key: private_key_ciphertext,
                             kms_ciphertext: encryption_key_ciphertext
                                 .as_slice()
@@ -103,12 +104,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .await;
 
                     if let Err(e) = send_result {
+                        // TODO: figure out how best to handle vsock errors instead of silently failing
                         #[cfg(debug_assertions)]
                         eprintln!("failed to send send result: {}", e);
                         return;
                     }
                 }
-                VsockHostRequest::Sign => {
+                VsockHostRequest::Sign {} => {
+
+                    let decrypted = kmstool::decrypt(region, access_key_id, secret_access_key, session_token, proxy_port, ciphertext)
                     #[cfg(debug_assertions)]
                     eprintln!("sign is not yet implemented");
                 }

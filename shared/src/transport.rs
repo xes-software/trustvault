@@ -41,9 +41,20 @@ pub enum VsockHostRequest {
         aws_session_token: String,
         kms_proxy_port: String,
         kms_key_id: String,
-        nonce: [u8; 12],
+        aes_gcm_nonce: [u8; 12],
     },
-    Sign,
+    Sign {
+        aws_region: String,
+        aws_access_key_id: String,
+        aws_secret_access_key: String,
+        aws_session_token: String,
+        kms_proxy_port: String,
+        kms_key_id: String,
+        aes_gcm_nonce: [u8; 12],
+        encrypted_secret_key: Vec<u8>,
+        kms_ciphertext: Vec<u8>,
+        signature_scheme: SignatureScheme,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -56,3 +67,9 @@ pub struct VsockEnclaveCreateWalletData {
 
 pub type VsockEnclaveCreateWalletResponse =
     Result<VsockEnclaveCreateWalletData, VsockEnclaveCreateWalletError>;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum SignatureScheme {
+    Secp256k1,
+    Ed25519,
+}
