@@ -1,11 +1,12 @@
+use base64::{Engine, prelude::BASE64_STANDARD};
 use clap::Parser;
 use shared::transport::{
-    VsockEnclaveCreateWalletData, VsockEnclaveCreateWalletResponse, VsockEnclaveSignData,
-    VsockEnclaveSignResponse, VsockHostRequest, VsockTransport,
+    SignatureScheme, VsockEnclaveCreateWalletData, VsockEnclaveCreateWalletResponse,
+    VsockEnclaveSignData, VsockEnclaveSignResponse, VsockHostRequest, VsockTransport,
 };
 use tokio_vsock::{VMADDR_CID_ANY, VsockAddr, VsockListener};
 
-use crate::aes256gcm::encrypt_private_key_aes256gcm;
+use crate::aes256gcm::{decrypt_private_key_aes256gcm, encrypt_private_key_aes256gcm};
 
 pub mod aes256gcm;
 pub mod cli;
@@ -82,18 +83,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .await?;
 
                         let private_key_ciphertext = encrypt_private_key_aes256gcm(
-                            private_key.as_slice().try_into().unwrap(),
-                            encryption_key_plaintext.as_slice().try_into().unwrap(),
+                            private_key.as_slice().try_into().unwrap(), // TODO: remove .unwrap()
+                            &encryption_key_plaintext,
                             &aes_gcm_nonce,
                         )?;
 
                         return Ok(VsockEnclaveCreateWalletData {
                             aes_gcm_nonce: aes_gcm_nonce,
                             encrypted_secret_key: private_key_ciphertext,
-                            kms_ciphertext: encryption_key_ciphertext
-                                .as_slice()
-                                .try_into()
-                                .unwrap(),
+                            kms_ciphertext: encryption_key_ciphertext,
                             kms_key_id: kms_key_id,
                         });
                     })()
@@ -123,15 +121,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     signature_scheme,
                 } => {
                     let result = (async || -> VsockEnclaveSignResponse {
-                        let decrypted = kmstool::decrypt(
+                        let kms_ciphertext_base64 = BASE64_STANDARD.encode(kms_ciphertext);
+                        let [decrypted_encryption_key] = kmstool::decrypt(
                             aws_region.as_str(),
                             aws_access_key_id.as_str(),
                             aws_secret_access_key.as_str(),
                             aws_session_token.as_str(),
                             kms_proxy_port.as_str(),
-                            kms_ciphertext.as_str(), // TODO: this needs to be base64
+                            kms_ciphertext_base64.as_str(),
                         )
                         .await?;
+
+                        let private_key = decrypt_private_key_aes256gcm(
+                            &encrypted_secret_key,
+                            &decrypted_encryption_key,
+                            &aes_gcm_nonce,
+                        )?;
+
+                        match signature_scheme {
+                            SignatureScheme::Ed25519 => {
+                                // TODO: implement Ed25519 signing
+                                todo!();
+                            }
+                            SignatureScheme::Secp256k1 => {}
+                        }
 
                         return Ok(VsockEnclaveSignData {});
                     })()

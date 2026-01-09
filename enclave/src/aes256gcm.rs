@@ -3,7 +3,7 @@ use shared::error::Aes256GcmError;
 
 pub fn encrypt_private_key_aes256gcm(
     private_key: &[u8; 64],
-    encryption_key: &[u8; 32],
+    encryption_key: &Vec<u8>,
     nonce: &[u8; 12],
 ) -> Result<Vec<u8>, Aes256GcmError> {
     let cipher =
@@ -19,7 +19,7 @@ pub fn encrypt_private_key_aes256gcm(
 
 pub fn decrypt_private_key_aes256gcm(
     ciphertext: &[u8],
-    encryption_key: &[u8; 32],
+    encryption_key: &Vec<u8>,
     nonce: &[u8; 12],
 ) -> Result<Vec<u8>, Aes256GcmError> {
     let cipher =
@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn test_encrypt_decrypt_success() {
         let private_key = [42u8; 64];
-        let encryption_key = [1u8; 32];
+        let encryption_key = vec![1u8; 32];
         let nonce = [0u8; 12];
 
         let ciphertext = encrypt_private_key_aes256gcm(&private_key, &encryption_key, &nonce)
@@ -59,8 +59,8 @@ mod tests {
     #[test]
     fn test_decrypt_with_wrong_key_fails() {
         let private_key = [42u8; 64];
-        let encryption_key = [1u8; 32];
-        let wrong_key = [2u8; 32];
+        let encryption_key = vec![1u8; 32];
+        let wrong_key = vec![2u8; 32];
         let nonce = [0u8; 12];
 
         let ciphertext = encrypt_private_key_aes256gcm(&private_key, &encryption_key, &nonce)
@@ -78,7 +78,7 @@ mod tests {
     #[test]
     fn test_decrypt_with_wrong_nonce_fails() {
         let private_key = [42u8; 64];
-        let encryption_key = [1u8; 32];
+        let encryption_key = vec![1u8; 32];
         let nonce = [0u8; 12];
         let wrong_nonce = [99u8; 12];
 

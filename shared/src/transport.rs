@@ -61,7 +61,7 @@ pub enum VsockHostRequest {
 pub struct VsockEnclaveCreateWalletData {
     pub encrypted_secret_key: Vec<u8>,
     pub aes_gcm_nonce: [u8; 12],
-    pub kms_ciphertext: [u8; 32],
+    pub kms_ciphertext: Vec<u8>,
     pub kms_key_id: String,
 }
 

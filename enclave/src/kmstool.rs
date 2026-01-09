@@ -72,7 +72,7 @@ pub async fn decrypt(
     secret_access_key: &str,
     session_token: &str,
     proxy_port: &str,
-    ciphertext: &str,
+    ciphertext_base64: &str,
 ) -> Result<[Vec<u8>; 1], KmsToolError> {
     let result = Command::new("kmstool_enclave_cli")
         .arg("genkey")
@@ -87,7 +87,7 @@ pub async fn decrypt(
         .arg("--proxy-port")
         .arg(proxy_port)
         .arg("--ciphertext")
-        .arg(ciphertext)
+        .arg(ciphertext_base64)
         .output()
         .await?;
     let parsed = parse_output(["PLAINTEXT: "], &result)?;
